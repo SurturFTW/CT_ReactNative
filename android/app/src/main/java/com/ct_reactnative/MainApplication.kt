@@ -12,7 +12,12 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.react.soloader.OpenSourceMergedSoMapping
 import com.facebook.soloader.SoLoader
 
-class MainApplication : Application(), ReactApplication {
+import com.clevertap.react.CleverTapPackage
+import com.clevertap.react.CleverTapApplication
+import com.clevertap.android.sdk.CleverTapAPI
+import com.clevertap.android.sdk.CleverTapAPI.LogLevel
+
+class MainApplication : CleverTapApplication(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
@@ -20,6 +25,8 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
+              // packages.add(CleverTapPackage()) // Only needed when not auto-linking
+              // return packages;
             }
 
         override fun getJSMainModuleName(): String = "index"
@@ -34,6 +41,7 @@ class MainApplication : Application(), ReactApplication {
     get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
   override fun onCreate() {
+    CleverTapAPI.setDebugLevel(LogLevel.VERBOSE)
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

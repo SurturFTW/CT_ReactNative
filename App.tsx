@@ -1,13 +1,11 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+const CleverTap = require('clevertap-react-native');
 
 import React from 'react';
-import type {PropsWithChildren} from 'react';
+import type { PropsWithChildren } from 'react';
 import {
+  Alert,
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -15,6 +13,7 @@ import {
   Text,
   useColorScheme,
   View,
+  Button,
 } from 'react-native';
 
 import {
@@ -29,7 +28,7 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
+function Section({ children, title }: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -62,6 +61,63 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  const requestPermissions = async () => {
+    if (Platform.OS === 'android') {
+      try {
+        const granted = await PermissionsAndroid.requestMultiple([
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        ]);
+
+        const locationGranted =
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED;
+
+        const notificationsGranted = granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] === PermissionsAndroid.RESULTS.GRANTED;
+
+        if (!locationGranted) {
+          Alert.alert('Location permission denied');
+        }
+
+        if (!notificationsGranted) {
+          Alert.alert('Notifications permission denied');
+        }
+      } catch (err) {
+        console.warn(err);
+      }
+    }
+  };
+  // Function Call to request permissions
+  requestPermissions();
+
+  const onLogin = () => {
+    var myStuff = ['bag', 'shoes']
+    var props = {
+      'Name': 'React Native',                    // String
+      'Identity': '777',                         // String or number
+      'Email': 'react@native.com',                 // Email address of the user
+      'Phone': '+911122334455',                   // Phone (with the country code, starting with +)
+      'Gender': 'M',                             // Can be either M or F
+      'DOB': new Date(),    // Date of Birth. Set the Date object to the appropriate value first
+
+      // optional fields. controls whether the user will be sent email, push, etc.
+      'MSG-email': false,                        // Disable email notifications
+      'MSG-push': true,                          // Enable push notifications
+      'MSG-sms': false,                          // Disable SMS notifications
+      'MSG-whatsapp': true,                      // Enable WhatsApp notifications
+      'Stuff': myStuff                           //Array of Strings for user properties
+    }
+    CleverTap.onUserLogin(props);
+  }
+
+  const onEvent = () => {
+    // event with properties
+    var prods = { 'Name': 'XYZ', 'Price': 123 }
+    CleverTap.recordEvent('Product Viewed', prods);
+  }
+
+
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -76,20 +132,8 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
+          <Button title="Login" onPress={() => onLogin()} />
+          <Button title='Event' onPress={() => onEvent()} />
         </View>
       </ScrollView>
     </SafeAreaView>
