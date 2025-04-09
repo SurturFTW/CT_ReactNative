@@ -1,7 +1,7 @@
 const CleverTap = require('clevertap-react-native');
 
 import React from 'react';
-import type { PropsWithChildren } from 'react';
+import type {PropsWithChildren} from 'react';
 import {
   Alert,
   PermissionsAndroid,
@@ -28,7 +28,7 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
-function Section({ children, title }: SectionProps): React.JSX.Element {
+function Section({children, title}: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
     <View style={styles.sectionContainer}>
@@ -71,10 +71,14 @@ function App(): React.JSX.Element {
         ]);
 
         const locationGranted =
-          granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED &&
-          granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED;
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
+            PermissionsAndroid.RESULTS.GRANTED;
 
-        const notificationsGranted = granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] === PermissionsAndroid.RESULTS.GRANTED;
+        const notificationsGranted =
+          granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] ===
+          PermissionsAndroid.RESULTS.GRANTED;
 
         if (!locationGranted) {
           Alert.alert('Location permission denied');
@@ -92,31 +96,36 @@ function App(): React.JSX.Element {
   requestPermissions();
 
   const onLogin = () => {
-    var myStuff = ['bag', 'shoes']
+    var myStuff = ['bag', 'shoes'];
     var props = {
-      'Name': 'React Native',                    // String
-      'Identity': '777',                         // String or number
-      'Email': 'react@native.com',                 // Email address of the user
-      'Phone': '+911122334455',                   // Phone (with the country code, starting with +)
-      'Gender': 'M',                             // Can be either M or F
-      'DOB': new Date(),    // Date of Birth. Set the Date object to the appropriate value first
+      Name: 'React Native', // String
+      Identity: '777', // String or number
+      Email: 'react@native.com', // Email address of the user
+      Phone: '+911122334455', // Phone (with the country code, starting with +)
+      Gender: 'M', // Can be either M or F
+      DOB: new Date(), // Date of Birth. Set the Date object to the appropriate value first
 
       // optional fields. controls whether the user will be sent email, push, etc.
-      'MSG-email': false,                        // Disable email notifications
-      'MSG-push': true,                          // Enable push notifications
-      'MSG-sms': false,                          // Disable SMS notifications
-      'MSG-whatsapp': true,                      // Enable WhatsApp notifications
-      'Stuff': myStuff                           //Array of Strings for user properties
-    }
+      'MSG-email': false, // Disable email notifications
+      'MSG-push': true, // Enable push notifications
+      'MSG-sms': false, // Disable SMS notifications
+      'MSG-whatsapp': true, // Enable WhatsApp notifications
+      Stuff: myStuff, //Array of Strings for user properties
+    };
     CleverTap.onUserLogin(props);
-  }
+  };
 
   const onEvent = () => {
     // event with properties
-    var prods = { 'Name': 'XYZ', 'Price': 123 }
+    var prods = {Name: 'XYZ', Price: 123};
     CleverTap.recordEvent('Product Viewed', prods);
-  }
+  };
 
+  const onInbox = () => {
+    CleverTap.recordEvent('App Inbox Event');
+    CleverTap.initializeInbox();
+    CleverTap.showInbox();
+  };
 
   return (
     <SafeAreaView style={backgroundStyle}>
@@ -133,7 +142,8 @@ function App(): React.JSX.Element {
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
           <Button title="Login" onPress={() => onLogin()} />
-          <Button title='Event' onPress={() => onEvent()} />
+          <Button title="Event" onPress={() => onEvent()} />
+          <Button title="App Inbox" onPress={() => onInbox()} />
         </View>
       </ScrollView>
     </SafeAreaView>
