@@ -28,6 +28,28 @@ type SectionProps = PropsWithChildren<{
   title: string;
 }>;
 
+CleverTap.registerForPush();
+CleverTap.setDebugLevel(3);
+
+const styles = StyleSheet.create({
+  sectionContainer: {
+    marginTop: 32,
+    paddingHorizontal: 24,
+  },
+  sectionTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  sectionDescription: {
+    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '400',
+  },
+  highlight: {
+    fontWeight: '700',
+  },
+});
+
 function Section({children, title}: SectionProps): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   return (
@@ -61,7 +83,7 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
-  const requestPermissions = async () => {
+  const requestPermissionsAndroid = async () => {
     if (Platform.OS === 'android') {
       try {
         const granted = await PermissionsAndroid.requestMultiple([
@@ -93,7 +115,22 @@ function App(): React.JSX.Element {
     }
   };
   // Function Call to request permissions
-  requestPermissions();
+  requestPermissionsAndroid();
+
+  CleverTap.registerForPush();
+  CleverTap.promptForPushPermission(true);
+
+  let localInApp = {
+    inAppType: 'alert',
+    titleText: 'Get Notified',
+    messageText: 'Enable Notification permission',
+    followDeviceOrientation: true,
+    positiveBtnText: 'Allow',
+    negativeBtnText: 'Cancel',
+    fallbackToSettings: true, //Setting this parameter to true will open an in-App to redirect you to Mobile's OS settings page.
+  };
+
+  CleverTap.promptPushPrimer(localInApp);
 
   const onLogin = () => {
     var myStuff = ['bag', 'shoes'];
@@ -103,7 +140,7 @@ function App(): React.JSX.Element {
       Email: 'react@native.com', // Email address of the user
       Phone: '+911122334455', // Phone (with the country code, starting with +)
       Gender: 'M', // Can be either M or F
-      DOB: new Date(), // Date of Birth. Set the Date object to the appropriate value first
+      DOB: new Date('1993-11-22T06:35:31'), // Date of Birth. Set the Date object to the appropriate value first
 
       // optional fields. controls whether the user will be sent email, push, etc.
       'MSG-email': false, // Disable email notifications
@@ -113,18 +150,48 @@ function App(): React.JSX.Element {
       Stuff: myStuff, //Array of Strings for user properties
     };
     CleverTap.onUserLogin(props);
+    console.log('User Login');
   };
 
   const onEvent = () => {
     // event with properties
     var prods = {Name: 'XYZ', Price: 123};
     CleverTap.recordEvent('Product Viewed', prods);
+    console.log('Event with properties');
+  };
+
+  const onPush = () => {
+    CleverTap.recordEvent('Product Viewed');
+    console.log('Push Event');
   };
 
   const onInbox = () => {
     CleverTap.recordEvent('App Inbox Event');
+    console.log('App Inbox Event');
     CleverTap.initializeInbox();
     CleverTap.showInbox();
+  };
+
+  const onNative = () => {
+    CleverTap.recordEvent('Native Display Event');
+    console.log('Native Display Event');
+    CleverTap.initializeDisplayUnit();
+  };
+
+  const onGetId = () => {
+    CleverTap.getCleverTapID((err: any, res: any) => {
+      console.log('CleverTapID', res, err);
+    });
+  };
+  const onInApp = () => {
+    CleverTap.recordEvent('In-App Event');
+    console.log('INAPP NOTIFICATION SHOWN 123');
+    CleverTap.addListener(
+      CleverTap.CleverTapInAppNotificationShowed,
+      (event: any) => {
+        console.log('INAPP NOTIFICATION SHOWN 123', event);
+      },
+    );
   };
 
   return (
@@ -143,30 +210,15 @@ function App(): React.JSX.Element {
           }}>
           <Button title="Login" onPress={() => onLogin()} />
           <Button title="Event" onPress={() => onEvent()} />
+          <Button title="Push Notification" onPress={() => onPush()} />
           <Button title="App Inbox" onPress={() => onInbox()} />
+          <Button title="Native Display" onPress={() => onNative()} />
+          <Button title="In App" onPress={() => onInApp()} />
+          <Button title="Get CT Id" onPress={() => onGetId()} />
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;

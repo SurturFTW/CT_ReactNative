@@ -14,8 +14,13 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
+target 'NotificationService' do
+  pod 'CTNotificationService'
+end
+
 target 'CT_ReactNative' do
   config = use_native_modules!
+    pod 'clevertap-react-native', :path => '../node_modules/clevertap-react-native'
 
   use_react_native!(
     :path => config[:reactNativePath],
