@@ -136,11 +136,11 @@ function App(): React.JSX.Element {
     var myStuff = ['bag', 'shoes'];
     var props = {
       Name: 'React Native', // String
-      Identity: '777', // String or number
-      Email: 'react@native.com', // Email address of the user
+      Identity: '1990', // String or number
+      Email: 'react.test@abc.com', // Email address of the user
       Phone: '+911122334455', // Phone (with the country code, starting with +)
       Gender: 'M', // Can be either M or F
-      DOB: new Date('1993-11-22T06:35:31'), // Date of Birth. Set the Date object to the appropriate value first
+      'DOB' : new Date('1992-12-22T06:35:31'),   // Date of Birth. Set the Date object to the appropriate value first
 
       // optional fields. controls whether the user will be sent email, push, etc.
       'MSG-email': false, // Disable email notifications
