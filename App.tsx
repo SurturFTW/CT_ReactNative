@@ -151,7 +151,7 @@ function App(): React.JSX.Element {
       'MSG-whatsapp': true, // Enable WhatsApp notifications
       Stuff: myStuff, //Array of Strings for user properties
     };
-    CleverTap.onUserLogin(props);
+    // CleverTap.onUserLogin(props);
     CleverTapMultiInstance.recordUserLogin('dashboard1', props);
     CleverTapMultiInstance.recordUserLogin('dashboard2', props);
     console.log('User Login');
@@ -168,15 +168,23 @@ function App(): React.JSX.Element {
 
   const onPush = () => {
     // CleverTap.recordEvent('Notification Event');
-    CleverTapMultiInstance.recordEvent('dashboard1', 'Notification Event');
-    CleverTapMultiInstance.recordEvent('dashboard2', 'Notification Event');
+    CleverTapMultiInstance.recordEvent(
+      'dashboard1',
+      'Notification Event',
+      null,
+    );
+    CleverTapMultiInstance.recordEvent(
+      'dashboard2',
+      'Notification Event',
+      null,
+    );
     console.log('Push Event');
   };
 
   const onInbox = () => {
     CleverTap.recordEvent('App Inbox Event');
     console.log('App Inbox Event');
-    CleverTap.initializeInbox();
+    // CleverTap.initializeInbox();
     CleverTap.showInbox();
   };
 
@@ -188,13 +196,25 @@ function App(): React.JSX.Element {
 
   const onGetId = () => {
     CleverTap.getCleverTapID((err: any, res: any) => {
-      console.log('CleverTapID', res, err);
+      CleverTapMultiInstance.getCleverTapID(
+        'dashboard1',
+        (err1: any, res1: any) => {
+          console.log('CleverTapID dashboard1', res1, err1);
+        },
+      );
+      CleverTapMultiInstance.getCleverTapID(
+        'dashboard2',
+        (err2: any, res2: any) => {
+          console.log('CleverTapID dashboard2', res2, err2);
+        },
+      );
     });
   };
+
   const onInApp = () => {
     // CleverTap.recordEvent('In-App Event');
-    CleverTapMultiInstance.recordEvent('dashboard1', 'In-App Event');
-    CleverTapMultiInstance.recordEvent('dashboard2', 'In-App Event');
+    CleverTapMultiInstance.recordEvent('dashboard1', 'In-App Event', null);
+    CleverTapMultiInstance.recordEvent('dashboard2', 'In-App Event', null);
     console.log('INAPP NOTIFICATION SHOWN 123');
     CleverTap.addListener(
       CleverTap.CleverTapInAppNotificationShowed,
