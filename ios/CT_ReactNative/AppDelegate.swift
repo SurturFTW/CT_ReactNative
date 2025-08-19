@@ -30,14 +30,7 @@ class AppDelegate: RCTAppDelegate {
 	                              completionHandler([.badge, .sound, .alert])
         }
     }
-  
-  override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
-          // While running the Application add CleverTap Account ID and Account token in your .plist file
-          
-          // call to record the Notification viewed
-          CleverTap.sharedInstance()?.recordNotificationViewedEvent(withData: request.content.userInfo)
-          super.didReceive(request, withContentHandler: contentHandler)
-      }
+
 
   override func bundleURL() -> URL? {
 #if DEBUG
