@@ -26,6 +26,8 @@ class MainApplication : CleverTapApplication(), ReactApplication {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
               // packages.add(CleverTapPackage()) // Only needed when not auto-linking
+              add(com.ct_reactnative.CleverTapMultiInstancePackage())
+
               // return packages;
             }
 
@@ -44,9 +46,13 @@ class MainApplication : CleverTapApplication(), ReactApplication {
     CleverTapAPI.setDebugLevel(LogLevel.VERBOSE)
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
+
+    // ✅ Register lifecycle once here
+    registerActivityLifecycleCallbacks(CleverTapLifecycleHelper())
+
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      // If you opted-in for the New Architecture, we load the native entry point for this app.
       load()
     }
-  }
+}
+
 }

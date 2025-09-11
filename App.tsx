@@ -1,7 +1,4 @@
-const CleverTap = require('clevertap-react-native');
-
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useEffect} from 'react';
 import {
   Alert,
   PermissionsAndroid,
@@ -16,20 +13,10 @@ import {
   Button,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-CleverTap.registerForPush();
-CleverTap.setDebugLevel(3);
+// 👉 Import multi-instance bridge (the TypeScript wrapper we made)
+import {CleverTapMulti} from './clevertapMulti';
 
 const styles = StyleSheet.create({
   sectionContainer: {
@@ -50,38 +37,32 @@ const styles = StyleSheet.create({
   },
 });
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+
+  // ✅ Initialize both dashboards at startup
+  useEffect(() => {
+    (async () => {
+      await CleverTapMulti.initInstance(
+        'd1',
+        'TEST-865-ZRW-7K7Z',
+        'TEST-021-56b',
+        'eu1',
+      );
+      await CleverTapMulti.initInstance(
+        'd2',
+        'TEST-4R8-7ZK-6K7Z',
+        'TEST-31a-b24',
+        'eu1',
+      );
+    })();
+
+    requestPermissionsAndroid();
+  }, []);
 
   const requestPermissionsAndroid = async () => {
     if (Platform.OS === 'android') {
@@ -92,21 +73,19 @@ function App(): React.JSX.Element {
           PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         ]);
 
-        const locationGranted =
-          granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] ===
-            PermissionsAndroid.RESULTS.GRANTED &&
-          granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] ===
-            PermissionsAndroid.RESULTS.GRANTED;
-
-        const notificationsGranted =
-          granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] ===
-          PermissionsAndroid.RESULTS.GRANTED;
-
-        if (!locationGranted) {
+        if (
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] !==
+            PermissionsAndroid.RESULTS.GRANTED ||
+          granted[PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION] !==
+            PermissionsAndroid.RESULTS.GRANTED
+        ) {
           Alert.alert('Location permission denied');
         }
 
-        if (!notificationsGranted) {
+        if (
+          granted[PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS] !==
+          PermissionsAndroid.RESULTS.GRANTED
+        ) {
           Alert.alert('Notifications permission denied');
         }
       } catch (err) {
@@ -114,84 +93,36 @@ function App(): React.JSX.Element {
       }
     }
   };
-  // Function Call to request permissions
-  requestPermissionsAndroid();
 
-  CleverTap.registerForPush();
-  CleverTap.promptForPushPermission(true);
-
-  let localInApp = {
-    inAppType: 'alert',
-    titleText: 'Get Notified',
-    messageText: 'Enable Notification permission',
-    followDeviceOrientation: true,
-    positiveBtnText: 'Allow',
-    negativeBtnText: 'Cancel',
-    fallbackToSettings: true, //Setting this parameter to true will open an in-App to redirect you to Mobile's OS settings page.
-  };
-
-  CleverTap.promptPushPrimer(localInApp);
-
+  // ✅ Multi-instance login
   const onLogin = () => {
-    var myStuff = ['bag', 'shoes'];
-    var props = {
-      Name: 'React Native', // String
-      Identity: '1990', // String or number
-      Email: 'react.test@abc.com', // Email address of the user
-      Phone: '+911122334455', // Phone (with the country code, starting with +)
-      Gender: 'M', // Can be either M or F
-      'DOB' : new Date('1992-12-22T06:35:31'),   // Date of Birth. Set the Date object to the appropriate value first
-
-      // optional fields. controls whether the user will be sent email, push, etc.
-      'MSG-email': false, // Disable email notifications
-      'MSG-push': true, // Enable push notifications
-      'MSG-sms': false, // Disable SMS notifications
-      'MSG-whatsapp': true, // Enable WhatsApp notifications
-      Stuff: myStuff, //Array of Strings for user properties
+    const profile = {
+      Identity: '1990',
+      Name: 'React Native',
+      Email: 'react.test@abc.com',
+      Phone: '+911122334455',
+      Gender: 'M',
     };
-    CleverTap.onUserLogin(props);
-    console.log('User Login');
+
+    CleverTapMulti.pushProfile('d1', profile);
+    CleverTapMulti.pushProfile('d2', profile);
+
+    console.log('User Login sent to both dashboards');
   };
 
+  // ✅ Multi-instance event
   const onEvent = () => {
-    // event with properties
-    var prods = {Name: 'XYZ', Price: 123};
-    CleverTap.recordEvent('Product Viewed', prods);
-    console.log('Event with properties');
+    CleverTapMulti.pushEvent('d1', 'Product Viewed', {Name: 'XYZ', Price: 123});
+    CleverTapMulti.pushEvent('d2', 'Product Viewed', {Name: 'XYZ', Price: 123});
+
+    console.log('Event sent to both dashboards');
   };
 
-  const onPush = () => {
-    CleverTap.recordEvent('Product Viewed');
-    console.log('Push Event');
-  };
-
-  const onInbox = () => {
-    CleverTap.recordEvent('App Inbox Event');
-    console.log('App Inbox Event');
-    CleverTap.initializeInbox();
-    CleverTap.showInbox();
-  };
-
-  const onNative = () => {
-    CleverTap.recordEvent('Native Display Event');
-    console.log('Native Display Event');
-    CleverTap.initializeDisplayUnit();
-  };
-
-  const onGetId = () => {
-    CleverTap.getCleverTapID((err: any, res: any) => {
-      console.log('CleverTapID', res, err);
-    });
-  };
-  const onInApp = () => {
-    CleverTap.recordEvent('In-App Event');
-    console.log('INAPP NOTIFICATION SHOWN 123');
-    CleverTap.addListener(
-      CleverTap.CleverTapInAppNotificationShowed,
-      (event: any) => {
-        console.log('INAPP NOTIFICATION SHOWN 123', event);
-      },
-    );
+  const onGetId = async () => {
+    const id1 = await CleverTapMulti.getCleverTapID('d1');
+    const id2 = await CleverTapMulti.getCleverTapID('d2');
+    console.log('CTID d1:', id1);
+    console.log('CTID d2:', id2);
   };
 
   return (
@@ -205,16 +136,10 @@ function App(): React.JSX.Element {
         style={backgroundStyle}>
         <Header />
         <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Button title="Login" onPress={() => onLogin()} />
-          <Button title="Event" onPress={() => onEvent()} />
-          <Button title="Push Notification" onPress={() => onPush()} />
-          <Button title="App Inbox" onPress={() => onInbox()} />
-          <Button title="Native Display" onPress={() => onNative()} />
-          <Button title="In App" onPress={() => onInApp()} />
-          <Button title="Get CT Id" onPress={() => onGetId()} />
+          style={{backgroundColor: isDarkMode ? Colors.black : Colors.white}}>
+          <Button title="Login" onPress={onLogin} />
+          <Button title="Event" onPress={onEvent} />
+          <Button title="Get CleverTap IDs" onPress={onGetId} />
         </View>
       </ScrollView>
     </SafeAreaView>
