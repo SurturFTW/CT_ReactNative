@@ -6,8 +6,6 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
-  StyleSheet,
-  Text,
   useColorScheme,
   View,
   Button,
@@ -17,25 +15,6 @@ import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 // 👉 Import multi-instance bridge (the TypeScript wrapper we made)
 import {CleverTapMulti} from './clevertapMulti';
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -47,18 +26,28 @@ function App(): React.JSX.Element {
   // ✅ Initialize both dashboards at startup
   useEffect(() => {
     (async () => {
-      await CleverTapMulti.initInstance(
-        'd1',
-        'TEST-865-ZRW-7K7Z',
-        'TEST-021-56b',
-        'eu1',
-      );
-      await CleverTapMulti.initInstance(
-        'd2',
-        'TEST-4R8-7ZK-6K7Z',
-        'TEST-31a-b24',
-        'eu1',
-      );
+      try {
+        await CleverTapMulti.initInstance(
+          'd1',
+          'TEST-865-ZRW-7K7Z',
+          'TEST-021-56b',
+          'eu1',
+        );
+        await CleverTapMulti.initInstance(
+          'd2',
+          'TEST-4R8-7ZK-6K7Z',
+          'TEST-31a-b24',
+          'eu1',
+        );
+
+        // Push app launched system events for both instances
+        CleverTapMulti.pushAppLaunchedEvent('d1');
+        CleverTapMulti.pushAppLaunchedEvent('d2');
+
+        console.log('CleverTap multi-instances initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize CleverTap instances:', error);
+      }
     })();
 
     requestPermissionsAndroid();
@@ -119,10 +108,23 @@ function App(): React.JSX.Element {
   };
 
   const onGetId = async () => {
-    const id1 = await CleverTapMulti.getCleverTapID('d1');
-    const id2 = await CleverTapMulti.getCleverTapID('d2');
-    console.log('CTID d1:', id1);
-    console.log('CTID d2:', id2);
+    try {
+      const id1 = await CleverTapMulti.getCleverTapID('d1');
+      const id2 = await CleverTapMulti.getCleverTapID('d2');
+      console.log('CTID d1:', id1);
+      console.log('CTID d2:', id2);
+      Alert.alert('CleverTap IDs', `d1: ${id1}\nd2: ${id2}`);
+    } catch (error) {
+      console.error('Failed to get CleverTap IDs:', error);
+      Alert.alert('Error', 'Failed to get CleverTap IDs');
+    }
+  };
+
+  // ✅ Screen view system event
+  const onScreenView = () => {
+    CleverTapMulti.pushScreenViewedEvent('d1', 'Home Screen');
+    CleverTapMulti.pushScreenViewedEvent('d2', 'Home Screen');
+    console.log('Screen Viewed event sent to both dashboards');
   };
 
   return (
@@ -139,6 +141,7 @@ function App(): React.JSX.Element {
           style={{backgroundColor: isDarkMode ? Colors.black : Colors.white}}>
           <Button title="Login" onPress={onLogin} />
           <Button title="Event" onPress={onEvent} />
+          <Button title="Screen View" onPress={onScreenView} />
           <Button title="Get CleverTap IDs" onPress={onGetId} />
         </View>
       </ScrollView>
