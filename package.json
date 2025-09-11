@@ -10,10 +10,10 @@
     "test": "jest"
   },
   "dependencies": {
-    "clevertap-react-native": "3.6.0",
+    "clevertap-react-native": "1.2.1",
     "navigator": "^1.0.1",
     "react": "18.3.1",
-    "react-native": "0.77.0"
+    "react-native": "0.76.9"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

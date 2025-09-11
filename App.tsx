@@ -1,6 +1,7 @@
 const CleverTap = require('clevertap-react-native');
 
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import CustomInbox from './components/CustomInbox';
 import type {PropsWithChildren} from 'react';
 import {
   Alert,
@@ -16,13 +17,7 @@ import {
   Button,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -78,6 +73,7 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  const [showInbox, setShowInbox] = useState(false);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -114,23 +110,32 @@ function App(): React.JSX.Element {
       }
     }
   };
+
   // Function Call to request permissions
-  requestPermissionsAndroid();
+  useEffect(() => {
+    // Request permissions when component mounts
+    requestPermissionsAndroid();
 
-  CleverTap.registerForPush();
-  CleverTap.promptForPushPermission(true);
+    // CleverTap initialization
+    try {
+      CleverTap.registerForPush();
+      CleverTap.promptForPushPermission(true);
 
-  let localInApp = {
-    inAppType: 'alert',
-    titleText: 'Get Notified',
-    messageText: 'Enable Notification permission',
-    followDeviceOrientation: true,
-    positiveBtnText: 'Allow',
-    negativeBtnText: 'Cancel',
-    fallbackToSettings: true, //Setting this parameter to true will open an in-App to redirect you to Mobile's OS settings page.
-  };
+      let localInApp = {
+        inAppType: 'alert',
+        titleText: 'Get Notified',
+        messageText: 'Enable Notification permission',
+        followDeviceOrientation: true,
+        positiveBtnText: 'Allow',
+        negativeBtnText: 'Cancel',
+        fallbackToSettings: true,
+      };
 
-  CleverTap.promptPushPrimer(localInApp);
+      CleverTap.promptPushPrimer(localInApp);
+    } catch (error) {
+      console.error('CleverTap initialization error:', error);
+    }
+  }, []);
 
   const onLogin = () => {
     var myStuff = ['bag', 'shoes'];
@@ -140,7 +145,7 @@ function App(): React.JSX.Element {
       Email: 'react.test@abc.com', // Email address of the user
       Phone: '+911122334455', // Phone (with the country code, starting with +)
       Gender: 'M', // Can be either M or F
-      'DOB' : new Date('1992-12-22T06:35:31'),   // Date of Birth. Set the Date object to the appropriate value first
+      DOB: new Date('1992-12-22T06:35:31'), // Date of Birth. Set the Date object to the appropriate value first
 
       // optional fields. controls whether the user will be sent email, push, etc.
       'MSG-email': false, // Disable email notifications
@@ -168,8 +173,12 @@ function App(): React.JSX.Element {
   const onInbox = () => {
     CleverTap.recordEvent('App Inbox Event');
     console.log('App Inbox Event');
-    CleverTap.initializeInbox();
-    CleverTap.showInbox();
+    // Instead of using CleverTap's default inbox UI
+    // CleverTap.initializeInbox();
+    // CleverTap.showInbox();
+
+    // Show our custom inbox
+    setShowInbox(true);
   };
 
   const onNative = () => {
@@ -195,28 +204,34 @@ function App(): React.JSX.Element {
   };
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Button title="Login" onPress={() => onLogin()} />
-          <Button title="Event" onPress={() => onEvent()} />
-          <Button title="Push Notification" onPress={() => onPush()} />
-          <Button title="App Inbox" onPress={() => onInbox()} />
-          <Button title="Native Display" onPress={() => onNative()} />
-          <Button title="In App" onPress={() => onInApp()} />
-          <Button title="Get CT Id" onPress={() => onGetId()} />
-        </View>
-      </ScrollView>
+    <SafeAreaView style={[backgroundStyle, {flex: 1}]}>
+      {showInbox ? (
+        <CustomInbox onClose={() => setShowInbox(false)} />
+      ) : (
+        <>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor={backgroundStyle.backgroundColor}
+          />
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            style={backgroundStyle}>
+            <Header />
+            <View
+              style={{
+                backgroundColor: isDarkMode ? Colors.black : Colors.white,
+              }}>
+              <Button title="Login" onPress={() => onLogin()} />
+              <Button title="Event" onPress={() => onEvent()} />
+              <Button title="Push Notification" onPress={() => onPush()} />
+              <Button title="App Inbox" onPress={() => onInbox()} />
+              <Button title="Native Display" onPress={() => onNative()} />
+              <Button title="In App" onPress={() => onInApp()} />
+              <Button title="Get CT Id" onPress={() => onGetId()} />
+            </View>
+          </ScrollView>
+        </>
+      )}
     </SafeAreaView>
   );
 }
