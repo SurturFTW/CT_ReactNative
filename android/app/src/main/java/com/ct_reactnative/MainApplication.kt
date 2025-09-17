@@ -14,6 +14,7 @@ import com.facebook.soloader.SoLoader
 
 import com.clevertap.react.CleverTapApplication
 import com.clevertap.android.sdk.CleverTapAPI
+import com.clevertap.android.sdk.ActivityLifecycleCallback;
 import com.clevertap.android.sdk.CleverTapAPI.LogLevel
 
 class MainApplication : CleverTapApplication(), ReactApplication {
@@ -21,7 +22,6 @@ class MainApplication : CleverTapApplication(), ReactApplication {
   override val reactNativeHost: ReactNativeHost =
       object : DefaultReactNativeHost(this) {
         override fun getPackages(): List<ReactPackage> {
-          // ✅ FIX: use `application` here instead of `this`
           return PackageList(application).packages + listOf(
               CleverTapMultiInstancePackage()
           )
@@ -37,7 +37,11 @@ class MainApplication : CleverTapApplication(), ReactApplication {
     get() = getDefaultReactHost(applicationContext, reactNativeHost)
 
   override fun onCreate() {
+    CleverTapAPI.changeCredentials("TEST-865-ZRW-7K7Z", "TEST-021-56b") //Pushkar 
+    CleverTapAPI.changeCredentials("TEST-4R8-7ZK-6K7Z", "TEST-31a-b24") //Henil
+    
     CleverTapAPI.setDebugLevel(LogLevel.VERBOSE)
+
     super.onCreate()
     SoLoader.init(this, OpenSourceMergedSoMapping)
     if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {

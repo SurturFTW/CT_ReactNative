@@ -1,8 +1,9 @@
-const CleverTap = require('clevertap-react-native');
+import CleverTap from 'clevertap-react-native';
+
 import {NativeModules} from 'react-native';
 const {CleverTapMultiInstance} = NativeModules;
 
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Alert,
@@ -80,10 +81,20 @@ function Section({children, title}: SectionProps): React.JSX.Element {
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
+  const listenerRef = useRef<any>(null);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+
+  // Clean up listeners on component unmount
+  useEffect(() => {
+    return () => {
+      if (listenerRef.current) {
+        listenerRef.current.remove();
+      }
+    };
+  }, []);
 
   const requestPermissionsAndroid = async () => {
     if (Platform.OS === 'android') {
@@ -182,16 +193,18 @@ function App(): React.JSX.Element {
   };
 
   const onInbox = () => {
-    CleverTap.recordEvent('App Inbox Event');
+    CleverTap.recordEvent('App Inbox Event', null);
     console.log('App Inbox Event');
     // CleverTap.initializeInbox();
-    CleverTap.showInbox();
+    CleverTap.showInbox({});
   };
 
   const onNative = () => {
-    CleverTap.recordEvent('Native Display Event');
+    CleverTap.recordEvent('Native Display Event', null);
     console.log('Native Display Event');
-    CleverTap.initializeDisplayUnit();
+    CleverTap.getAllDisplayUnits((err: any, res: any) => {
+      console.log('Native Display units:', res, err);
+    });
   };
 
   const onGetId = () => {
@@ -212,16 +225,28 @@ function App(): React.JSX.Element {
   };
 
   const onInApp = () => {
-    // CleverTap.recordEvent('In-App Event');
-    CleverTapMultiInstance.recordEvent('dashboard1', 'In-App Event', null);
-    CleverTapMultiInstance.recordEvent('dashboard2', 'In-App Event', null);
-    console.log('INAPP NOTIFICATION SHOWN 123');
-    CleverTap.addListener(
-      CleverTap.CleverTapInAppNotificationShowed,
-      (event: any) => {
-        console.log('INAPP NOTIFICATION SHOWN 123', event);
-      },
-    );
+    try {
+      // Remove existing listener before adding new one
+      if (listenerRef.current) {
+        listenerRef.current.remove();
+      }
+
+      // Record events with error handling
+      CleverTapMultiInstance.recordEvent('dashboard1', 'In-App Event', null);
+      CleverTapMultiInstance.recordEvent('dashboard2', 'In-App Event', null);
+
+      console.log('INAPP NOTIFICATION TRIGGERED');
+
+      // Add listener and store reference for cleanup
+      listenerRef.current = CleverTap.addListener(
+        CleverTap.CleverTapInAppNotificationShowed,
+        (event: any) => {
+          console.log('INAPP NOTIFICATION SHOWN', event);
+        },
+      );
+    } catch (error) {
+      console.error('Error in onInApp:', error);
+    }
   };
 
   return (
