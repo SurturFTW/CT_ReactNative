@@ -1,8 +1,4 @@
-const CleverTap = require('clevertap-react-native');
-
-import {showInbox} from 'clevertap-react-native';
-import React, {useState, useRef, useEffect} from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useState, useRef, useEffect, PropsWithChildren} from 'react';
 import {
   Alert,
   PermissionsAndroid,
@@ -21,160 +17,155 @@ import {
   Linking,
   Dimensions,
 } from 'react-native';
-
+import CleverTap from 'clevertap-react-native';
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
-import CustomInboxScreen from './src/screens/CustomInboxScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+function Dashboard({}) {
+  CleverTap.registerForPush();
+  CleverTap.setDebugLevel(3);
 
-CleverTap.registerForPush();
-CleverTap.setDebugLevel(3);
+  CleverTap.createNotificationChannel(
+    'test',
+    'Clever Tap React Native Testing',
+    'CT React Native Testing',
+    5,
+    true,
+  );
 
-CleverTap.createNotificationChannel(
-  'test',
-  'Clever Tap React Native Testing',
-  'CT React Native Testing',
-  5,
-  true,
-); // The notification channel importance can have any value from 1 to 5. A higher value means a more interruptive notification.
+  const {width: screenWidth} = Dimensions.get('window');
 
-const {width: screenWidth} = Dimensions.get('window');
+  const styles = StyleSheet.create({
+    sectionContainer: {
+      marginTop: 32,
+      paddingHorizontal: 24,
+    },
+    sectionTitle: {
+      fontSize: 24,
+      fontWeight: '600',
+    },
+    sectionDescription: {
+      marginTop: 8,
+      fontSize: 18,
+      fontWeight: '400',
+    },
+    highlight: {
+      fontWeight: '700',
+    },
+    displayUnitContainer: {
+      backgroundColor: '#f0f0f0',
+      margin: 10,
+      padding: 15,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: '#ddd',
+      elevation: 2,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 2},
+      shadowOpacity: 0.1,
+      shadowRadius: 2,
+    },
+    displayUnitTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 10,
+      color: '#333',
+    },
+    carouselContainer: {
+      marginBottom: 15,
+      height: 280,
+    },
+    carouselItem: {
+      backgroundColor: '#fff',
+      borderRadius: 8,
+      padding: 15,
+      marginHorizontal: 5,
+      width: screenWidth - 40,
+      elevation: 1,
+      shadowColor: '#000',
+      shadowOffset: {width: 0, height: 1},
+      shadowOpacity: 0.05,
+      shadowRadius: 1,
+    },
+    carouselImage: {
+      width: '100%',
+      height: 180,
+      borderRadius: 6,
+      marginBottom: 10,
+    },
+    carouselText: {
+      fontSize: 14,
+      color: '#666',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    carouselKeyText: {
+      fontSize: 12,
+      fontWeight: 'bold',
+      color: '#333',
+      textAlign: 'center',
+      marginBottom: 8,
+    },
+    paginationContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    paginationDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 4,
+      marginHorizontal: 3,
+      backgroundColor: '#ddd',
+    },
+    paginationDotActive: {
+      backgroundColor: '#007AFF',
+    },
+    actionButton: {
+      backgroundColor: '#FF3B30',
+      padding: 8,
+      borderRadius: 6,
+      marginTop: 5,
+    },
+    actionButtonText: {
+      color: 'white',
+      textAlign: 'center',
+      fontWeight: 'bold',
+      fontSize: 12,
+    },
+    displayUnitInfo: {
+      backgroundColor: '#e8f4f8',
+      padding: 10,
+      borderRadius: 6,
+      marginBottom: 10,
+    },
+    infoText: {
+      fontSize: 12,
+      color: '#333',
+      marginBottom: 2,
+    },
+    payloadText: {
+      fontSize: 10,
+      fontFamily: 'monospace',
+      color: '#666',
+      backgroundColor: '#fff',
+      padding: 10,
+      borderRadius: 4,
+      marginTop: 10,
+    },
+    viewButton: {
+      backgroundColor: '#007AFF',
+      padding: 10,
+      borderRadius: 5,
+      marginTop: 10,
+    },
+    viewButtonText: {
+      color: 'white',
+      textAlign: 'center',
+      fontWeight: 'bold',
+    },
+  });
 
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  displayUnitContainer: {
-    backgroundColor: '#f0f0f0',
-    margin: 10,
-    padding: 15,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  displayUnitTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    color: '#333',
-  },
-  carouselContainer: {
-    marginBottom: 15,
-    height: 280,
-  },
-  carouselItem: {
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 15,
-    marginHorizontal: 5,
-    width: screenWidth - 40,
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.05,
-    shadowRadius: 1,
-  },
-  carouselImage: {
-    width: '100%',
-    height: 180,
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  carouselText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  carouselKeyText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#333',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  paginationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  paginationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    marginHorizontal: 3,
-    backgroundColor: '#ddd',
-  },
-  paginationDotActive: {
-    backgroundColor: '#007AFF',
-  },
-  actionButton: {
-    backgroundColor: '#FF3B30',
-    padding: 8,
-    borderRadius: 6,
-    marginTop: 5,
-  },
-  actionButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-    fontSize: 12,
-  },
-  displayUnitInfo: {
-    backgroundColor: '#e8f4f8',
-    padding: 10,
-    borderRadius: 6,
-    marginBottom: 10,
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#333',
-    marginBottom: 2,
-  },
-  payloadText: {
-    fontSize: 10,
-    fontFamily: 'monospace',
-    color: '#666',
-    backgroundColor: '#fff',
-    padding: 10,
-    borderRadius: 4,
-    marginTop: 10,
-  },
-  viewButton: {
-    backgroundColor: '#007AFF',
-    padding: 10,
-    borderRadius: 5,
-    marginTop: 10,
-  },
-  viewButtonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-});
-
-function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
@@ -217,7 +208,6 @@ function App(): React.JSX.Element {
 
   CleverTap.registerForPush();
   CleverTap.promptForPushPermission(true);
-  CleverTap.initializeInbox();
 
   CleverTap.addListener(
     CleverTap.CleverTapPushNotificationClicked,
@@ -267,7 +257,7 @@ function App(): React.JSX.Element {
   };
 
   const onPush = () => {
-    CleverTap.recordEvent('Notification Event');
+    CleverTap.recordEvent('Notification Event', {});
     console.log('Push Event');
   };
 
@@ -275,7 +265,10 @@ function App(): React.JSX.Element {
     console.log('User Logged out');
   };
 
-  const showInbox = () => {
+  const onInbox = () => {
+    CleverTap.recordEvent('App Inbox Event', {});
+    console.log('App Inbox Event');
+    CleverTap.initializeInbox();
     CleverTap.showInbox({
       tabs: ['Offers', 'Promotions'],
       navBarTitle: 'My App Inbox',
@@ -291,11 +284,6 @@ function App(): React.JSX.Element {
     });
   };
 
-  const onInbox = () => {
-    CleverTap.recordEvent('App Inbox Event');
-    console.log('App Inbox Event');
-  };
-
   const [displayUnits, setDisplayUnits] = useState<any[]>([]);
   const [hasDisplayUnits, setHasDisplayUnits] = useState(false);
   const [showDisplayUnits, setShowDisplayUnits] = useState(false);
@@ -303,7 +291,6 @@ function App(): React.JSX.Element {
   const [carouselIndexes, setCarouselIndexes] = useState<{
     [key: string]: number;
   }>({});
-  const carouselRef = useRef<FlatList>(null);
   const carouselRefs = useRef<{[key: string]: FlatList | null}>({});
 
   const onNative = () => {
@@ -421,7 +408,7 @@ function App(): React.JSX.Element {
     });
   };
   const onInApp = () => {
-    CleverTap.recordEvent('In-App Event');
+    CleverTap.recordEvent('In-App Event', {});
     console.log('INAPP NOTIFICATION SHOWN 123');
     CleverTap.addListener(
       CleverTap.CleverTapInAppNotificationShowed,
@@ -604,31 +591,6 @@ function App(): React.JSX.Element {
     setShowDisplayUnits(!showDisplayUnits);
   };
 
-  const [showCustomInbox, setShowCustomInbox] = useState(false);
-
-  const showCustomInboxScreen = () => {
-    setShowCustomInbox(true);
-  };
-
-  const hideCustomInboxScreen = () => {
-    setShowCustomInbox(false);
-  };
-
-  if (showCustomInbox) {
-    return (
-      <SafeAreaView style={{flex: 1}}>
-        <TouchableOpacity
-          style={{padding: 15, backgroundColor: '#007AFF'}}
-          onPress={hideCustomInboxScreen}>
-          <Text style={{color: 'white', textAlign: 'center'}}>
-            ← Back to App
-          </Text>
-        </TouchableOpacity>
-        <CustomInboxScreen />
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={backgroundStyle}>
       <StatusBar
@@ -651,24 +613,17 @@ function App(): React.JSX.Element {
           />
 
           {/* <Button
-            title="Push Primer"
-            onPress={() => {
-              onPushPrimer;
-            }}
-          /> */}
+              title="Push Primer"
+              onPress={() => {
+                onPushPrimer;
+              }}
+            /> */}
 
           <Button title="Custom Event" onPress={() => onEvent()} />
 
           <Button title="Notification Event" onPress={() => onPush()} />
 
-          <Button title="App Inbox Event" onPress={() => onInbox()} />
-
-          <Button title="Show Inbox" onPress={() => showInbox()} />
-
-          <Button
-            title="Custom Inbox"
-            onPress={() => showCustomInboxScreen()}
-          />
+          <Button title="App Inbox" onPress={() => onInbox()} />
 
           <Button title="Native Display" onPress={() => onNative()} />
 
@@ -708,4 +663,4 @@ function App(): React.JSX.Element {
   );
 }
 
-export default App;
+export default Dashboard;
