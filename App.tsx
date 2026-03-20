@@ -226,6 +226,34 @@ function App(): React.JSX.Element {
     },
   );
 
+  // Only for Android
+  CleverTap.addListener(
+    CleverTap.CleverTapInAppNotificationShowed,
+    (event: any) => {
+      _handleCleverTapInAppEvent(
+        CleverTap.CleverTapInAppNotificationShowed,
+        event,
+      );
+    },
+  );
+  function _handleCleverTapInAppEvent(eventName: any, event: any) {
+    console.log('CleverTap Event called - ', eventName, event);
+  }
+
+  CleverTap.addListener(
+    CleverTap.CleverTapInAppNotificationDismissed,
+    (event: any) => {
+      _handleCleverTapEvent1(
+        CleverTap.CleverTapInAppNotificationDismissed,
+        event,
+      );
+    },
+  );
+
+  function _handleCleverTapEvent1(eventName: any, event: any) {
+    console.log('CleverTap Event called - ', eventName, event);
+  }
+
   let localInApp = {
     inAppType: 'alert',
     titleText: 'Get Notified',
@@ -309,6 +337,12 @@ function App(): React.JSX.Element {
   const onNative = () => {
     CleverTap.recordEvent('Native Event', {});
     console.log('Native Display Event recorded');
+    getAllDisplayUnits();
+  };
+
+  const onNative2 = () => {
+    CleverTap.recordEvent('Native Event 2', {});
+    console.log('Native Display Event 2 recorded');
     getAllDisplayUnits();
   };
 
@@ -422,13 +456,7 @@ function App(): React.JSX.Element {
   };
   const onInApp = () => {
     CleverTap.recordEvent('In-App Event');
-    console.log('INAPP NOTIFICATION SHOWN 123');
-    CleverTap.addListener(
-      CleverTap.CleverTapInAppNotificationShowed,
-      (event: any) => {
-        console.log('INAPP NOTIFICATION SHOWN 123', event);
-      },
-    );
+    console.log('In App Event');
   };
 
   const renderDisplayUnit = ({item, index}: {item: any; index: number}) => {
@@ -671,6 +699,8 @@ function App(): React.JSX.Element {
           />
 
           <Button title="Native Display" onPress={() => onNative()} />
+
+          <Button title="Native Display 2" onPress={() => onNative2()} />
 
           <Button title="In App" onPress={() => onInApp()} />
 
