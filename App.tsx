@@ -5,12 +5,13 @@ import {
   StatusBar,
   View,
   Button,
+  Linking,
   useColorScheme,
-  Dimensions,
 } from 'react-native';
 import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 import CustomInboxScreen from './src/screens/CustomInboxScreen';
+import DeeplinkScreen from './src/screens/DeeplinkScreen';
 import DisplayUnitRenderer from './src/components/DisplayUnitRenderer';
 import {
   initializeCleverTap,
@@ -27,9 +28,7 @@ import {
   recordCustomEvent,
   getUserCleverTapID,
 } from './src/utils/cleverTapEvents';
-import styles from './src/styles/appStyles';
-
-const {width: screenWidth} = Dimensions.get('window');
+import {recordEvent} from 'clevertap-react-native';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -40,17 +39,32 @@ function App(): React.JSX.Element {
   const [displayUnits, setDisplayUnits] = useState<any[]>([]);
   const [showDisplayUnits, setShowDisplayUnits] = useState(false);
   const [showCustomInbox, setShowCustomInbox] = useState(false);
+  const [deeplinkUrl, setDeeplinkUrl] = useState<string | null>(null);
   const [carouselIndexes, setCarouselIndexes] = useState<{
     [key: string]: number;
   }>({});
   const carouselRefs = useRef<{[key: string]: any}>({});
 
-  // Initialize CleverTap on mount
-  // ...existing code...
   useEffect(() => {
     initializeCleverTap();
     setupCleverTapListeners();
     promptPushPrimer();
+
+    // Handle deeplink when app is already open
+    const subscription = Linking.addEventListener('url', ({url}) => {
+      if (url.startsWith('ctdemo://')) {
+        setDeeplinkUrl(url);
+      }
+    });
+
+    // Handle deeplink that launched the app from a cold start
+    Linking.getInitialURL().then(url => {
+      if (url && url.startsWith('ctdemo://')) {
+        setDeeplinkUrl(url);
+      }
+    });
+
+    return () => subscription.remove();
   }, []);
 
   const handleLogin = () => {
@@ -84,6 +98,14 @@ function App(): React.JSX.Element {
     handleGetDisplayUnits();
   };
 
+  if (deeplinkUrl) {
+    return (
+      <SafeAreaView style={{flex: 1}}>
+        <DeeplinkScreen url={deeplinkUrl} onBack={() => setDeeplinkUrl(null)} />
+      </SafeAreaView>
+    );
+  }
+
   if (showCustomInbox) {
     return (
       <SafeAreaView style={{flex: 1}}>
@@ -112,9 +134,42 @@ function App(): React.JSX.Element {
           <Button
             title="Custom Event"
             onPress={() =>
-              recordCustomEvent('Product Viewed', {Name: 'XYZ', Price: 123})
+              recordCustomEvent('Product Viewed', {
+                Name: 'XYZ',
+                'Product ID': 123,
+              })
             }
           />
+
+          <Button
+            title="Multi-Value Event"
+            onPress={() =>
+              // Basic event with multi-value (array) property
+              recordEvent('Collection Viewed', {
+                Platform: 'android',
+                Collection_Handle: 'rareism-eoss',
+                Collection_ID: '293491048519',
+                Collection_Page_Name: 'RAREISM EOSS',
+                Collection_Title: 'RAREISM EOSS',
+                Collection_URL:
+                  'https://thehouseofrare.com/collections/rareism-eoss',
+                Vendor_Source: 'APP',
+                Login_Status: 'Logged In',
+                Vendor_Name: 'RARERABBIT',
+                Customer_Type: 'Repeat',
+                Category: ['TOP', 'DRESS', 'TROUSER', 'T-SHIRT'],
+                Fabric: ['COTTON', 'POLYESTER', 'COTTON BLEND'],
+                Color: ['BLACK', 'MULTI', 'BLUE'],
+                CLOSURE: ['PULL-ON', 'BUTTON', 'ZIPPER'],
+                COLLAR: ['CREW NECK', 'V-NECK', 'SPREAD COLLAR'],
+                FIT: ['REGULAR', 'RELAXED', 'FIT AND FLARE'],
+                OCCASION: ['CASUAL', 'BRUNCH', 'FORMAL'],
+                PATTERN: ['PLAIN', 'FLORAL PRINT', 'ABSTRACT PRINT'],
+                SLEEVE: ['FULL SLEEVE', 'HALF SLEEVE', 'SLEEVELESS'],
+              })
+            }
+          />
+
           <Button
             title="Notification Event"
             onPress={() => recordCustomEvent('Notification Event')}
