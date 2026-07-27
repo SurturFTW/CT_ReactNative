@@ -30,6 +30,9 @@ import {
 } from './src/utils/cleverTapEvents';
 import {recordEvent} from 'clevertap-react-native';
 
+const HOME_DEEPLINK_URL = 'ctdemo://home';
+const DEEPLINK_PAGE_URL = 'ctdemo://deeplink';
+
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -45,6 +48,19 @@ function App(): React.JSX.Element {
   }>({});
   const carouselRefs = useRef<{[key: string]: any}>({});
 
+  const handleDeeplink = (url: string) => {
+    if (url === HOME_DEEPLINK_URL || url.startsWith(`${HOME_DEEPLINK_URL}/`)) {
+      setDeeplinkUrl(null);
+      setShowCustomInbox(false);
+      setShowDisplayUnits(false);
+      return;
+    }
+
+    if (url === DEEPLINK_PAGE_URL || url.startsWith(`${DEEPLINK_PAGE_URL}/`)) {
+      setDeeplinkUrl(url);
+    }
+  };
+
   useEffect(() => {
     initializeCleverTap();
     setupCleverTapListeners();
@@ -52,15 +68,13 @@ function App(): React.JSX.Element {
 
     // Handle deeplink when app is already open
     const subscription = Linking.addEventListener('url', ({url}) => {
-      if (url.startsWith('ctdemo://')) {
-        setDeeplinkUrl(url);
-      }
+      handleDeeplink(url);
     });
 
     // Handle deeplink that launched the app from a cold start
     Linking.getInitialURL().then(url => {
-      if (url && url.startsWith('ctdemo://')) {
-        setDeeplinkUrl(url);
+      if (url) {
+        handleDeeplink(url);
       }
     });
 
@@ -192,6 +206,14 @@ function App(): React.JSX.Element {
           <Button
             title="Custom Inbox"
             onPress={() => setShowCustomInbox(true)}
+          />
+          <Button
+            title="Home Deeplink"
+            onPress={() => Linking.openURL(HOME_DEEPLINK_URL)}
+          />
+          <Button
+            title="Deeplink Page"
+            onPress={() => Linking.openURL(DEEPLINK_PAGE_URL)}
           />
           <Button title="Native Display" onPress={handleNativeDisplay} />
           <Button title="Native Display 2" onPress={handleNativeDisplay2} />
