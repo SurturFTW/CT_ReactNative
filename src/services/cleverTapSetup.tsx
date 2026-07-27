@@ -8,13 +8,6 @@ export const initializeCleverTap = async () => {
     CleverTap.setDebugLevel(3);
     CleverTap.initializeInbox();
 
-    CleverTap.addListener(
-      CleverTap.CleverTapPushNotificationClicked,
-      (e: any) => {
-        console.log('Push Notification Clicked:', e);
-      },
-    );
-
     CleverTap.createNotificationChannel(
       'test',
       'Clever Tap React Native Testing',

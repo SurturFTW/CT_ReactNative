@@ -50,12 +50,16 @@ function App(): React.JSX.Element {
   }>({});
   const carouselRefs = useRef<{[key: string]: any}>({});
 
+  const resetScreens = () => {
+    setDeeplinkUrl(null);
+    setPromoDeeplinkUrl(null);
+    setShowCustomInbox(false);
+    setShowDisplayUnits(false);
+  };
+
   const handleDeeplink = (url: string) => {
     if (url === HOME_DEEPLINK_URL || url.startsWith(`${HOME_DEEPLINK_URL}/`)) {
-      setDeeplinkUrl(null);
-      setPromoDeeplinkUrl(null);
-      setShowCustomInbox(false);
-      setShowDisplayUnits(false);
+      resetScreens();
       return;
     }
 
@@ -64,11 +68,13 @@ function App(): React.JSX.Element {
       url.startsWith(`${PROMO_DEEPLINK_URL}?`) ||
       url.startsWith(`${PROMO_DEEPLINK_URL}/`)
     ) {
+      resetScreens();
       setPromoDeeplinkUrl(url);
       return;
     }
 
     if (url === DEEPLINK_PAGE_URL || url.startsWith(`${DEEPLINK_PAGE_URL}/`)) {
+      resetScreens();
       setDeeplinkUrl(url);
     }
   };
