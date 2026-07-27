@@ -3,16 +3,19 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
+  StyleSheet,
   View,
-  Button,
+  Text,
   Linking,
-  useColorScheme,
 } from 'react-native';
-import {Colors, Header} from 'react-native/Libraries/NewAppScreen';
 
 import CustomInboxScreen from './src/screens/CustomInboxScreen';
 import DeeplinkScreen from './src/screens/DeeplinkScreen';
+import PromoDeeplinkScreen from './src/screens/PromoDeeplinkScreen';
 import DisplayUnitRenderer from './src/components/DisplayUnitRenderer';
+import AppButton from './src/components/AppButton';
+import Section from './src/components/Section';
+import {colors} from './src/styles/theme';
 import {
   initializeCleverTap,
   setupCleverTapListeners,
@@ -32,17 +35,16 @@ import {recordEvent} from 'clevertap-react-native';
 
 const HOME_DEEPLINK_URL = 'ctdemo://home';
 const DEEPLINK_PAGE_URL = 'ctdemo://deeplink';
+const PROMO_DEEPLINK_URL = 'ctdemo://promo';
+const PROMO_DEEPLINK_TEST_URL =
+  'ctdemo://promo?id=123&source=push&campaign=summer_sale';
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
   const [displayUnits, setDisplayUnits] = useState<any[]>([]);
   const [showDisplayUnits, setShowDisplayUnits] = useState(false);
   const [showCustomInbox, setShowCustomInbox] = useState(false);
   const [deeplinkUrl, setDeeplinkUrl] = useState<string | null>(null);
+  const [promoDeeplinkUrl, setPromoDeeplinkUrl] = useState<string | null>(null);
   const [carouselIndexes, setCarouselIndexes] = useState<{
     [key: string]: number;
   }>({});
@@ -51,8 +53,18 @@ function App(): React.JSX.Element {
   const handleDeeplink = (url: string) => {
     if (url === HOME_DEEPLINK_URL || url.startsWith(`${HOME_DEEPLINK_URL}/`)) {
       setDeeplinkUrl(null);
+      setPromoDeeplinkUrl(null);
       setShowCustomInbox(false);
       setShowDisplayUnits(false);
+      return;
+    }
+
+    if (
+      url === PROMO_DEEPLINK_URL ||
+      url.startsWith(`${PROMO_DEEPLINK_URL}?`) ||
+      url.startsWith(`${PROMO_DEEPLINK_URL}/`)
+    ) {
+      setPromoDeeplinkUrl(url);
       return;
     }
 
@@ -114,38 +126,59 @@ function App(): React.JSX.Element {
 
   if (deeplinkUrl) {
     return (
-      <SafeAreaView style={{flex: 1}}>
+      <SafeAreaView style={styles.flex}>
         <DeeplinkScreen url={deeplinkUrl} onBack={() => setDeeplinkUrl(null)} />
+      </SafeAreaView>
+    );
+  }
+
+  if (promoDeeplinkUrl) {
+    return (
+      <SafeAreaView style={styles.flex}>
+        <PromoDeeplinkScreen
+          url={promoDeeplinkUrl}
+          onBack={() => setPromoDeeplinkUrl(null)}
+        />
       </SafeAreaView>
     );
   }
 
   if (showCustomInbox) {
     return (
-      <SafeAreaView style={{flex: 1}}>
-        <Button
-          title="← Back to App"
-          onPress={() => setShowCustomInbox(false)}
-        />
+      <SafeAreaView style={styles.flex}>
+        <View style={styles.backButtonWrap}>
+          <AppButton
+            title="← Back to App"
+            variant="primary"
+            onPress={() => setShowCustomInbox(false)}
+          />
+        </View>
         <CustomInboxScreen />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
+    <SafeAreaView style={[styles.flex, styles.background, {paddingTop: 50}]}>
+      <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
       <ScrollView
         contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{backgroundColor: isDarkMode ? Colors.black : Colors.white}}>
-          <Button title="Login" onPress={handleLogin} />
-          <Button
+        style={styles.background}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>CleverTap RN Demo</Text>
+          <Text style={styles.headerSubtitle}>
+            Exercise SDK features and deeplink scenarios
+          </Text>
+        </View>
+
+        <Section title="Profile">
+          <AppButton title="Login" variant="primary" onPress={handleLogin} />
+          <AppButton title="Get CT Id" onPress={getUserCleverTapID} />
+          <AppButton title="Log out" variant="danger" onPress={logoutUser} />
+        </Section>
+
+        <Section title="Events">
+          <AppButton
             title="Custom Event"
             onPress={() =>
               recordCustomEvent('Product Viewed', {
@@ -154,12 +187,10 @@ function App(): React.JSX.Element {
               })
             }
           />
-
-          <Button
+          <AppButton
             title="Multi-Value Event"
             onPress={() =>
-              // Basic event with multi-value (array) property
-              recordEvent('Collection Viewed', {
+              recordCustomEvent('Collection Viewed', {
                 Platform: 'android',
                 Collection_Handle: 'rareism-eoss',
                 Collection_ID: '293491048519',
@@ -183,16 +214,22 @@ function App(): React.JSX.Element {
               })
             }
           />
-
-          <Button
+          <AppButton
             title="Notification Event"
             onPress={() => recordCustomEvent('Notification Event')}
           />
-          <Button
+          <AppButton
             title="App Inbox Event"
             onPress={() => recordCustomEvent('App Inbox Event')}
           />
-          <Button
+          <AppButton
+            title="In App Event"
+            onPress={() => recordCustomEvent('In-App Event')}
+          />
+        </Section>
+
+        <Section title="App Inbox">
+          <AppButton
             title="Show Inbox"
             onPress={() =>
               showInboxUI({
@@ -203,51 +240,76 @@ function App(): React.JSX.Element {
               })
             }
           />
-          <Button
+          <AppButton
             title="Custom Inbox"
             onPress={() => setShowCustomInbox(true)}
           />
-          <Button
+        </Section>
+
+        <Section title="Deeplinks">
+          <AppButton
             title="Home Deeplink"
             onPress={() => Linking.openURL(HOME_DEEPLINK_URL)}
           />
-          <Button
+          <AppButton
             title="Deeplink Page"
             onPress={() => Linking.openURL(DEEPLINK_PAGE_URL)}
           />
-          <Button title="Native Display" onPress={handleNativeDisplay} />
-          <Button title="Native Display 2" onPress={handleNativeDisplay2} />
-          <Button
-            title="In App"
-            onPress={() => recordCustomEvent('In-App Event')}
+          <AppButton
+            title="Promo Deeplink (with params)"
+            onPress={() => Linking.openURL(PROMO_DEEPLINK_TEST_URL)}
           />
-          <Button title="Get CT Id" onPress={getUserCleverTapID} />
-          <Button title="Log out" onPress={logoutUser} />
+        </Section>
 
+        <Section title="Display Units">
+          <AppButton title="Native Display" onPress={handleNativeDisplay} />
+          <AppButton title="Native Display 2" onPress={handleNativeDisplay2} />
           {displayUnits.length > 0 && (
-            <View>
-              <Button
-                title={
-                  showDisplayUnits
-                    ? 'Hide Display Units'
-                    : `Show Display Units (${displayUnits.length})`
-                }
-                onPress={() => setShowDisplayUnits(!showDisplayUnits)}
-              />
-              {showDisplayUnits && (
-                <DisplayUnitRenderer
-                  displayUnits={displayUnits}
-                  carouselIndexes={carouselIndexes}
-                  setCarouselIndexes={setCarouselIndexes}
-                  carouselRefs={carouselRefs}
-                />
-              )}
-            </View>
+            <AppButton
+              title={
+                showDisplayUnits
+                  ? 'Hide Display Units'
+                  : `Show Display Units (${displayUnits.length})`
+              }
+              onPress={() => setShowDisplayUnits(!showDisplayUnits)}
+            />
           )}
-        </View>
+          {showDisplayUnits && (
+            <DisplayUnitRenderer
+              displayUnits={displayUnits}
+              carouselIndexes={carouselIndexes}
+              setCarouselIndexes={setCarouselIndexes}
+              carouselRefs={carouselRefs}
+            />
+          )}
+        </Section>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  flex: {flex: 1},
+  background: {backgroundColor: colors.background},
+  header: {
+    paddingHorizontal: 24,
+    paddingTop: 24,
+    paddingBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: colors.title,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: colors.subtitle,
+    marginTop: 4,
+  },
+  backButtonWrap: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+});
 
 export default App;

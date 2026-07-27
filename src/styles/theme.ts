@@ -1,0 +1,15 @@
+export const colors = {
+  background: '#F5F6FA',
+  card: '#FFFFFF',
+  border: '#E4E7EE',
+  title: '#1A1D29',
+  subtitle: '#6B7280',
+  primary: '#4C6FFF',
+  primaryText: '#FFFFFF',
+  secondary: '#EEF1FF',
+  secondaryText: '#4C6FFF',
+  danger: '#FF3B30',
+  dangerText: '#FFFFFF',
+  paramKey: '#6B7280',
+  paramValue: '#1A1D29',
+};
